@@ -31,6 +31,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "646861cd-666d-4cda-a242-1372d6974513"
+      }
+    },
+    "owner": "leobardoa"
   }
 }
