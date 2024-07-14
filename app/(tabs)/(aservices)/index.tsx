@@ -23,7 +23,7 @@ const index = () => {
                     </TouchableOpacity>
                 </ThemedView>
                 <ThemedView style={styles.card}>
-                    <TouchableOpacity style={styles.cardLayout} onPress={() => { router.navigate('NewCotization') }}>
+                    <TouchableOpacity style={styles.cardLayout} onPress={() => { router.navigate('newCotizacion') }}>
                         <View style={styles.cardImage}>
                             <Image source={require('@/assets/images/logo.png')} style={{ width: 80, height: 80, marginRight: 5 }} />
                         </View>
