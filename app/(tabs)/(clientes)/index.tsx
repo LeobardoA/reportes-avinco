@@ -16,7 +16,6 @@ const index = () => {
     useFocusEffect(
         React.useCallback(() => {
             const fetchData = async () => {
-                console.log('Se escaneo la base de datos en la tabla: Clientes');
                 await setupDatabase();
                 const allClients = await getAllClients();
                 setClientes(allClients);
