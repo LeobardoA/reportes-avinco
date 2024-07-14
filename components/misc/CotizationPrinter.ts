@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import Cliente from './Cliente';
-import { Concept } from '@/app/(tabs)/(services)/NewCotization';
+import { Concept } from '../ConceptCard';
 
 export async function setHTML(name: string, uri: string) {
     try {

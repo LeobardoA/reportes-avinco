@@ -69,8 +69,8 @@ export const index = () => {
                 marginTop: 10
             }}>
                 {dataList.map((item, index) => (
-                    <ThemedView style={styles.itemContainer}>
-                        <TouchableOpacity key={index} style={styles.itemLayout} onPress={() => handleCheckboxChange(index)}>
+                    <ThemedView key={index} style={styles.itemContainer}>
+                        <TouchableOpacity style={styles.itemLayout} onPress={() => handleCheckboxChange(index)}>
                             <ThemedText>{item}</ThemedText>
                             <FontAwesome name={checkboxStates[index] ? 'check-square' : 'square-o'} size={30} color={Colors[colorScheme ?? 'light'].tint} />
                         </TouchableOpacity>
@@ -110,17 +110,18 @@ export const index = () => {
 export default index;
 const styles = StyleSheet.create({
     itemContainer: {
-        paddingHorizontal: 25,
-        paddingVertical: 20,
         marginHorizontal: 15,
         borderRadius: 15,
         marginVertical: 8,
         elevation: 2,
     },
     itemLayout: {
+        flex: 1,
         justifyContent: 'space-between',
         flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 25,
+        paddingVertical: 20,
     },
     footerBtn: {
         width: 50,

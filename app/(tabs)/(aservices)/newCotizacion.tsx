@@ -1,121 +1,51 @@
 import { GlobalColors } from '@/assets/GlobalTheme';
 import Header from '@/components/AvincoHeader';
+import ConceptCard, { Concept } from '@/components/ConceptCard';
 import Cliente from '@/components/misc/Cliente';
 import { generateHTML } from '@/components/misc/CotizationPrinter';
 import { getAllClients } from '@/components/misc/DatabaseManager';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { FontAwesome } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { printToFileAsync } from 'expo-print';
 import { useFocusEffect } from 'expo-router';
 import { shareAsync } from 'expo-sharing';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
-
-export interface Concept {
-    id: string;
-    description: string;
-    quantity: string;
-    unitPrice: string;
-}
-
-interface ConceptCardProps {
-    concept: Concept;
-    onChange: (key: keyof Concept, value: string) => void;
-    onDelete: () => void;
-}
-
-const ConceptCard: React.FC<ConceptCardProps> = ({ concept, onChange, onDelete }) => {
-    const [isFormVisible, setIsFormVisible] = useState(true);
-    const colorScheme = useColorScheme();
-
-
-    return (
-        <ThemedView style={styles.card}>
-            <View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <ThemedText>Partida: {concept.id}</ThemedText>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <TouchableOpacity
-                            style={{ width: 25, alignItems: 'center' }}
-                            onPress={onDelete}
-                        >
-                            <FontAwesome name='trash' size={20} color={Colors[colorScheme ?? 'light'].text} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={{ width: 25, alignItems: 'center' }}
-                            onPress={() => setIsFormVisible(!isFormVisible)}
-                        >
-                            <FontAwesome name={isFormVisible ? 'caret-up' : 'caret-down'} size={25} color={Colors[colorScheme ?? 'light'].text} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                <ThemedText style={{ marginBottom: 15 }}>Sub-Total: ${parseFloat(concept.quantity) * parseFloat(concept.unitPrice)}</ThemedText>
-            </View>
-            {isFormVisible && (
-                <View >
-                    <ThemedText>Descripcion</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={concept.description}
-                        onChangeText={(text) => onChange('description', text)}
-                    />
-                    <ThemedText>Cantidad</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={concept.quantity}
-                        onChangeText={(text) => onChange('quantity', text)}
-                        keyboardType="numeric"
-                    />
-                    <ThemedText>Precio Unitario</ThemedText>
-                    <TextInput
-                        style={styles.input}
-                        value={concept.unitPrice}
-                        onChangeText={(text) => onChange('unitPrice', text)}
-                        keyboardType="numeric"
-                    />
-                </View>
-            )}
-        </ThemedView>
-    );
-};
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 export const newCotization: React.FC = () => {
-    const [nombre, setNombre] = useState('');
-    const [contacto, setContacto] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [correo, setCorreo] = useState('');
+    const [clientData, setClientData] = useState({
+        nombre: '',
+        contacto: '',
+        telefono: '',
+        correo: ''
+    });
 
     const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [selectedClient, setSelectedClient] = useState<Cliente>(clientes[0]);
+    const [selectedClient, setSelectedClient] = useState<Cliente | null>(null);
     const [notas, setNotas] = useState<string>('');
 
     const exportPDF = async () => {
-        if (!nombre && !contacto) {
+        if (!clientData.nombre && !clientData.contacto) {
             Alert.alert('Error', 'Todos los campos del cliente deben estar completos.');
             return;
         }
 
-        // Crea un objeto Cliente con los datos del formulario
         const clienteDatos = new Cliente({
-            id: selectedClient ? selectedClient.id : null, // Asumiendo que id puede ser nulo si es un nuevo cliente
+            id: selectedClient ? selectedClient.id : null,
             alias: selectedClient ? selectedClient.alias : 'Nuevo Cliente',
-            name: nombre,
-            contacto: contacto,
-            telefono: telefono,
-            domicilio: selectedClient ? selectedClient.domicilio : '', // Usamos el domicilio del cliente seleccionado o una cadena vacía
-            correo: correo
+            name: clientData.nombre,
+            contacto: clientData.contacto,
+            telefono: clientData.telefono,
+            domicilio: selectedClient ? selectedClient.domicilio : '',
+            correo: clientData.correo
         });
 
         const html = await generateHTML(clienteDatos, concepts, notas);
 
         try {
-            // Genera el PDF
             const { uri } = await printToFileAsync({ html });
-
-            // Abre el PDF usando expo-sharing
             const opcionesCompartir = { UTI: '.pdf', mimeType: 'application/pdf', dialogTitle: 'Compartir Archivo' };
             await shareAsync(uri, opcionesCompartir);
         } catch (error) {
@@ -135,11 +65,22 @@ export const newCotization: React.FC = () => {
     );
 
     useEffect(() => {
-        setNombre(selectedClient ? selectedClient.name : '');
-        setContacto(selectedClient ? selectedClient.contacto : '');
-        setCorreo(selectedClient ? selectedClient.correo : '');
-        setTelefono(selectedClient ? selectedClient.telefono : '');
-    }, [selectedClient])
+        if (selectedClient) {
+            setClientData({
+                nombre: selectedClient.name,
+                contacto: selectedClient.contacto,
+                telefono: selectedClient.telefono,
+                correo: selectedClient.correo
+            });
+        } else {
+            setClientData({
+                nombre: '',
+                contacto: '',
+                telefono: '',
+                correo: ''
+            });
+        }
+    }, [selectedClient]);
 
     const [concepts, setConcepts] = useState<Concept[]>([
         { id: '1', description: '', quantity: '1', unitPrice: '0' },
@@ -180,7 +121,7 @@ export const newCotization: React.FC = () => {
     const addConcept = () => {
         setConcepts((prevConcepts) => [
             ...prevConcepts,
-            { id: (prevConcepts.length + 1).toString(), description: '', quantity: '', unitPrice: '' },
+            { id: (prevConcepts.length + 1).toString(), description: '', quantity: '1', unitPrice: '0' },
         ]);
     };
 
@@ -206,38 +147,37 @@ export const newCotization: React.FC = () => {
                             selectedValue={selectedClient}
                             dropdownIconColor={Colors[colorScheme ?? 'light'].icon}
                         >
-                            {clientes.map((cliente, index) => (
-                                <Picker.Item key={index} label={cliente.alias} value={cliente} />
+                            {clientes.map((cliente) => (
+                                <Picker.Item key={cliente.id} label={cliente.alias} value={cliente} />
                             ))}
                         </Picker>
-                        {/* CLIENT FORM */}
                         <TextInput
                             style={styles.input}
                             placeholder="Nombre Empresa"
-                            onChangeText={(text) => setNombre(text)}
+                            onChangeText={(text) => setClientData({ ...clientData, nombre: text })}
                             keyboardType="default"
-                            value={nombre}
+                            value={clientData.nombre}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Contacto"
-                            onChangeText={(text) => setContacto(text)}
+                            onChangeText={(text) => setClientData({ ...clientData, contacto: text })}
                             keyboardType="default"
-                            value={contacto}
+                            value={clientData.contacto}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Telefono"
-                            onChangeText={(text) => setTelefono(text)}
+                            onChangeText={(text) => setClientData({ ...clientData, telefono: text })}
                             keyboardType="phone-pad"
-                            value={telefono}
+                            value={clientData.telefono}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Correo"
-                            onChangeText={(text) => setCorreo(text)}
+                            onChangeText={(text) => setClientData({ ...clientData, correo: text })}
                             keyboardType="email-address"
-                            value={correo}
+                            value={clientData.correo}
                         />
                     </ThemedView>
                     {concepts.map((concept) => (
@@ -272,12 +212,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginVertical: 15
-    },
-    card: {
-        marginBottom: 10,
-        width: '90%',
-        padding: 15,
-        borderRadius: 15,
     },
     input: {
         borderWidth: 1,
