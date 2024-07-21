@@ -12,7 +12,7 @@ const index = () => {
             <Header />
             <View style={styles.content}>
                 <ThemedView style={styles.card}>
-                    <TouchableOpacity style={styles.cardLayout} onPress={() => { router.navigate('NewService') }}>
+                    <TouchableOpacity style={styles.cardLayout} onPress={() => { router.navigate('newServicio') }}>
                         <View style={styles.cardImage}>
                             <Image source={require('@/assets/images/logo.png')} style={{ width: 80, height: 80, marginRight: 5 }} />
                         </View>
